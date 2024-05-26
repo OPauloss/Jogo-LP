@@ -1,4 +1,4 @@
-typedef struct{
+typedef struct {
     int x;
     int y;
     int velocidade;
@@ -8,21 +8,22 @@ typedef struct{
     int vida;
 }Nave;
 
-typedef struct no{
+typedef struct no {
     int dado;
-    struct no *proximo;
+    struct no* proximo;
 }No;
 
-typedef struct{
+typedef struct {
     int x;
     int y;
     int velocidade;
 }Monstro;
 
-typedef struct{
+typedef struct {
     int x;
     int y;
     int velocidade;
     bool ativo;
     int dano;
 }Tiro;
+
