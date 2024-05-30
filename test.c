@@ -3,8 +3,10 @@
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/keyboard.h>
+#include <allegro5/allegro_acodec.h>
 #include "objetos.h"
 #include <stdio.h>
+
 
 #define NUM_TIRO 5
 #define largura 1280
@@ -28,30 +30,108 @@ int main() {
     InicializaNave(&nave);
     InicializaMonstro(&monstro);
     InitTiros(tiro, NUM_TIRO);
+//Verificador inicializacoes 
+    if (!al_init()) {
+            fprintf(stderr, "Falha ao inicializar a Allegro.\n");
+            return -1;
+        }
 
-    // INICIALIZAÇÕES
-    al_init();
-    al_init_font_addon();
-    al_init_ttf_addon();
-    al_init_image_addon();
-    al_install_keyboard();
-    al_install_mouse();
+    if (!al_install_audio()) {
+        fprintf(stderr, "Falha ao inicializar o áudio.\n");
+        return -1;
+    }
 
-    //HORIZONTAL/VERTICAL
+    if (!al_init_acodec_addon()) {
+        fprintf(stderr, "Falha ao inicializar os codecs de áudio.\n");
+        return -1;
+    }
+
+    if (!al_reserve_samples(2)) {
+        fprintf(stderr, "Falha ao reservar samples de áudio.\n");
+        return -1;
+    }
+    
+    if(!al_init_font_addon()){
+        fprintf(stderr, "Falha ao iniciar a fonte\n");
+        return -1;
+    }
+
+    if(!al_init_image_addon()){
+        fprintf(stderr, "Falha ao iniciar a imagem\n");
+        return -1;
+    }
+
+    if(!al_install_keyboard()){
+        fprintf(stderr, "Falha ao inicializar o teclado");
+        return -1;
+    }
+
+    if(!al_install_mouse()){
+        fprintf(stderr, "Falha ao inicializar o mouse.");
+        return -1;
+    }
+
+    // CRIAÇÃO DE DISPLAY E OUTROS COMPONENTES
     ALLEGRO_DISPLAY* display = al_create_display(largura, altura);
+    if (!display) {
+        fprintf(stderr, "Falha ao criar o display.\n");
+        return -1;
+    }
+
     al_set_window_position(display, 200, 200);
     al_set_window_title(display, "A gente vai conseguir, galera! Foco!");
 
     ALLEGRO_FONT* font = al_load_font("./font.ttf", 25, 0);
-    ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
+    if (!font) {
+        fprintf(stderr, "Falha ao carregar a fonte.\n");
+        return -1;
+    }
 
-    //DEFINIÇÕES DE BITMAP
+    ALLEGRO_TIMER* timer = al_create_timer(1.0 / FPS);
+    if (!timer) {
+        fprintf(stderr, "Falha ao criar o timer.\n");
+        return -1;
+    }
+
+    // DEFINIÇÕES DE BITMAP
     ALLEGRO_BITMAP* sprite = al_load_bitmap("./nave_resized.png");
+    if (!sprite) {
+        fprintf(stderr, "Falha ao carregar o sprite da nave.\n");
+        return -1;
+    }
+
     ALLEGRO_BITMAP* inimigo = al_load_bitmap("./mon.png");
+    if (!inimigo) {
+        fprintf(stderr, "Falha ao carregar o sprite do inimigo.\n");
+        return -1;
+    }
+
     ALLEGRO_BITMAP* disparo = al_load_bitmap("./disparo.png");
+    if (!disparo) {
+        fprintf(stderr, "Falha ao carregar o sprite do disparo.\n");
+        return -1;
+    }
+
     ALLEGRO_BITMAP* bg = al_load_bitmap("./R.jpg");
+    if (!bg) {
+        fprintf(stderr, "Falha ao carregar o background.\n");
+        return -1;
+    }
+
+    // DEFINIÇÕES DE SAMPLE
+    ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav");
+    ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav");
+    if (!sample) {
+        fprintf(stderr, "Falha ao carregar o áudio.\n");
+        return -1;
+    }
 
     ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
+    if (!event_queue) {
+        fprintf(stderr, "Falha ao criar a fila de eventos.\n");
+        return -1;
+    }
+
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
@@ -63,10 +143,12 @@ int main() {
     bool key_left = false;
     bool key_right = false;
 
+    // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
+    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+    
     while (true) {
         ALLEGRO_EVENT event;
         al_wait_for_event(event_queue, &event);
-
         if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
             break;
         }
@@ -89,6 +171,7 @@ int main() {
                 key_right = true;
                 break;
             case ALLEGRO_KEY_SPACE:
+                al_play_sample(sample_2, 0.5, 0.0, 3.0, ALLEGRO_PLAYMODE_ONCE, NULL);//0.5 é o som e 3.0 é a velocidade
                 AtirarTiros(tiro, nave, NUM_TIRO, disparo);
                 break;
             }
@@ -160,6 +243,8 @@ int main() {
     al_destroy_font(font);
     al_destroy_display(display);
     al_destroy_event_queue(event_queue);
+    al_destroy_sample(sample);
+    al_destroy_sample(sample_2);
 
     return 0;
 }
