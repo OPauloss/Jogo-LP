@@ -8,33 +8,37 @@
 #include <stdio.h>
 
 
-#define NUM_TIRO 5
+#define NUM_TIRO 20
+#define NUM_MONSTROS 10
 #define largura 1280
 #define altura 720
 #define FPS 60
 
 // PROTÓTIPOS
 void InicializaNave(Nave* nave);
-void InicializaMonstro(Monstro* monstro);
+void InicializaMonstro(Monstro monstro[], int tamanho);
 void InitTiros(Tiro tiros[], int tamanho);
 void AtirarTiros(Tiro tiros[], Nave nave, int tamanho, ALLEGRO_BITMAP* disparo);
 void AtualizaTiros(Tiro tiros[], int tamanho);
 void DesenhaTiros(Tiro tiros[], int tamanho, ALLEGRO_BITMAP* disparo);
+void LiberaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo);
+void AtualizaMonstros(Monstro monstro[], int tamanho);
+void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo);
 
 int main() {
     // VARIÁVEIS DO JOGO
     Nave nave;
-    Monstro monstro;
+    Monstro monstro[NUM_MONSTROS];
     Tiro tiro[NUM_TIRO];
 
     InicializaNave(&nave);
-    InicializaMonstro(&monstro);
+    InicializaMonstro(monstro, NUM_MONSTROS);
     InitTiros(tiro, NUM_TIRO);
-//Verificador inicializacoes 
+    //Verificador inicializacoes 
     if (!al_init()) {
-            fprintf(stderr, "Falha ao inicializar a Allegro.\n");
-            return -1;
-        }
+        fprintf(stderr, "Falha ao inicializar a Allegro.\n");
+        return -1;
+    }
 
     if (!al_install_audio()) {
         fprintf(stderr, "Falha ao inicializar o áudio.\n");
@@ -50,23 +54,23 @@ int main() {
         fprintf(stderr, "Falha ao reservar samples de áudio.\n");
         return -1;
     }
-    
-    if(!al_init_font_addon()){
+
+    if (!al_init_font_addon()) {
         fprintf(stderr, "Falha ao iniciar a fonte\n");
         return -1;
     }
 
-    if(!al_init_image_addon()){
+    if (!al_init_image_addon()) {
         fprintf(stderr, "Falha ao iniciar a imagem\n");
         return -1;
     }
 
-    if(!al_install_keyboard()){
+    if (!al_install_keyboard()) {
         fprintf(stderr, "Falha ao inicializar o teclado");
         return -1;
     }
 
-    if(!al_install_mouse()){
+    if (!al_install_mouse()) {
         fprintf(stderr, "Falha ao inicializar o mouse.");
         return -1;
     }
@@ -145,7 +149,7 @@ int main() {
 
     // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
     al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
-    
+
     while (true) {
         ALLEGRO_EVENT event;
         al_wait_for_event(event_queue, &event);
@@ -220,17 +224,14 @@ int main() {
             }
 
             AtualizaTiros(tiro, NUM_TIRO);
-
-            monstro.x -= monstro.velocidade;
-            if (monstro.x < 0) {
-                monstro.x = largura;
-            }
+            LiberaMonstros(monstro, NUM_MONSTROS, inimigo);
+            AtualizaMonstros(monstro, NUM_MONSTROS);
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
             al_draw_text(font, al_map_rgb(0, 0, 0), 7, 7, 0, "Space invaders");
             al_draw_text(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Space Invaders");
-            al_draw_bitmap(inimigo, monstro.x, monstro.y, 0);
+            DesenhaMonstros(monstro, NUM_MONSTROS, inimigo);
             al_draw_bitmap(sprite, nave.x, nave.y, 0);
             DesenhaTiros(tiro, NUM_TIRO, disparo);
             al_flip_display();
@@ -252,18 +253,13 @@ int main() {
 void InicializaNave(Nave* nave) {
     nave->x = 0;
     nave->y = 600;
-    nave->velocidade = 15;
+    nave->velocidade = 10;
 }
 
-void InicializaMonstro(Monstro* monstro) {
-    monstro->x = 1200;
-    monstro->y = 0;
-    monstro->velocidade = 2;
-}
 
 void InitTiros(Tiro tiros[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
-        tiros[i].velocidade = 10;
+        tiros[i].velocidade = 15;
         tiros[i].ativo = false;
     }
 }
@@ -282,8 +278,8 @@ void AtirarTiros(Tiro tiros[], Nave nave, int tamanho, ALLEGRO_BITMAP* disparo) 
 void AtualizaTiros(Tiro tiros[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         if (tiros[i].ativo) {
-            tiros[i].y -= tiros[i].velocidade;
-            if (tiros[i].y < 0) {
+            tiros[i].x += tiros[i].velocidade;
+            if (tiros[i].x > largura) {
                 tiros[i].ativo = false;
             }
         }
@@ -297,6 +293,45 @@ void DesenhaTiros(Tiro tiros[], int tamanho, ALLEGRO_BITMAP* disparo) {
         }
     }
 }
+
+void InicializaMonstro(Monstro* monstro, int tamanho){
+    for (int i = 0; i < tamanho; i++) {
+        monstro[i].velocidade = 5;
+        monstro[i].ativo = false;
+        monstro[i].borda_x = 18;
+        monstro[i].borda_y = 18;
+    }
+}
+void LiberaMonstros(Monstro monstro[], int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
+        if (!monstro[i].ativo){
+            if (rand() % 500 == 0) {
+                monstro[i].x = largura;
+                monstro[i].y = 30 + rand() % (altura - 60);
+                monstro[i].ativo = true;
+                break;
+            }
+        }
+    }
+}
+void AtualizaMonstros(Monstro monstro[], int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
+        if (monstro[i].ativo) {
+            monstro[i].x -= monstro[i].velocidade;
+            if (monstro[i].x < 0) {
+                monstro[i].ativo = false;
+            }
+        }
+    }
+}
+void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo) {
+    for (int i = 0; i < tamanho; i++) {
+        if (monstro[i].ativo){
+            al_draw_bitmap(inimigo, monstro[i].x, monstro[i].y, 20);
+        }
+    }
+}
+
 
 No* enfilar_comeco(No** fila, int valor) {
     No* novo = malloc(sizeof(No));
