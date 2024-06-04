@@ -24,6 +24,7 @@ void DesenhaTiros(Tiro tiros[], int tamanho, ALLEGRO_BITMAP* disparo);
 void LiberaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo);
 void AtualizaMonstros(Monstro monstro[], int tamanho);
 void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo);
+void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro);
 
 int main() {
     // VARIÁVEIS DO JOGO
@@ -125,6 +126,7 @@ int main() {
     // DEFINIÇÕES DE SAMPLE
     ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav");
     ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav");
+    ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav");
     if (!sample) {
         fprintf(stderr, "Falha ao carregar o áudio.\n");
         return -1;
@@ -142,13 +144,14 @@ int main() {
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_start_timer(timer);
 
+
+    // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
+    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+
     bool key_up = false;
     bool key_down = false;
     bool key_left = false;
     bool key_right = false;
-
-    // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
-    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
 
     while (true) {
         ALLEGRO_EVENT event;
@@ -226,6 +229,7 @@ int main() {
             AtualizaTiros(tiro, NUM_TIRO);
             LiberaMonstros(monstro, NUM_MONSTROS, inimigo);
             AtualizaMonstros(monstro, NUM_MONSTROS);
+            BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS);
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
@@ -246,6 +250,7 @@ int main() {
     al_destroy_event_queue(event_queue);
     al_destroy_sample(sample);
     al_destroy_sample(sample_2);
+    al_destroy_sample(sample_3);
 
     return 0;
 }
@@ -268,7 +273,7 @@ void AtirarTiros(Tiro tiros[], Nave nave, int tamanho, ALLEGRO_BITMAP* disparo) 
     for (int i = 0; i < tamanho; i++) {
         if (!tiros[i].ativo) {
             tiros[i].x = nave.x + (al_get_bitmap_width(disparo) / 2) - (al_get_bitmap_width(disparo) / 2);
-            tiros[i].y = nave.y;
+            tiros[i].y = nave.y + 40;
             tiros[i].ativo = true;
             break;
         }
@@ -298,8 +303,8 @@ void InicializaMonstro(Monstro* monstro, int tamanho){
     for (int i = 0; i < tamanho; i++) {
         monstro[i].velocidade = 5;
         monstro[i].ativo = false;
-        monstro[i].borda_x = 18;
-        monstro[i].borda_y = 18;
+        monstro[i].borda_x = 50;
+        monstro[i].borda_y = 50;
     }
 }
 void LiberaMonstros(Monstro monstro[], int tamanho) {
@@ -307,7 +312,7 @@ void LiberaMonstros(Monstro monstro[], int tamanho) {
         if (!monstro[i].ativo){
             if (rand() % 500 == 0) {
                 monstro[i].x = largura;
-                monstro[i].y = 30 + rand() % (altura - 60);
+                monstro[i].y = rand() % (altura - 60);
                 monstro[i].ativo = true;
                 break;
             }
@@ -331,7 +336,22 @@ void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo) {
         }
     }
 }
-
+void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro) {
+    for (int i = 0; i < tamanho_tiro; i++) {
+        if (tiros[i].ativo) {
+            for (int j = 0; j < tamanho_monstro; j++) {
+                if (tiros[i].x < (monstro[j].x + monstro[j].borda_x) &&
+                    tiros[i].x + 20 >(monstro[j].x) &&
+                    tiros[i].y < (monstro[j].y + monstro[j].borda_y) &&
+                    tiros[i].y + 20 > (monstro[j].y)) {
+                    tiros[i].ativo = false;
+                    monstro[j].ativo = false;
+                    break;
+                }
+            }
+        }
+    }
+}
 
 No* enfilar_comeco(No** fila, int valor) {
     No* novo = malloc(sizeof(No));
