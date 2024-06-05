@@ -19,6 +19,8 @@ typedef struct{
     int velocidade;
     int borda_x;
     int borda_y;
+    int pontuacao;
+    float rotacao;
     bool ativo;
 }Monstro;
 
