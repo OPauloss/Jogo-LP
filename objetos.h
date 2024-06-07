@@ -24,6 +24,11 @@ typedef struct{
     bool ativo;
 }Monstro;
 
+typedef struct megaAsteroide{
+    int qtd_asteroides;
+    Monstro monstro;
+} megaAsteroide;
+
 typedef struct {
     int x;
     int y;

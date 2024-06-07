@@ -7,7 +7,12 @@
 #include "objetos.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "monstro.c"
+#include "monstro.h"
+#include "disparo_nave.c"
+#include "disparo_nave.h"
 
+/// valendo
 
 #define NUM_TIRO 20
 #define NUM_MONSTROS 10
@@ -17,15 +22,6 @@
 
 // PROTÓTIPOS
 void InicializaNave(Nave* nave);
-void InicializaMonstro(Monstro monstro[], int tamanho);
-void InitTiros(Tiro tiros[], int tamanho);
-void AtirarTiros(Tiro tiros[], Nave nave, int tamanho, ALLEGRO_BITMAP* disparo);
-void AtualizaTiros(Tiro tiros[], int tamanho);
-void DesenhaTiros(Tiro tiros[], int tamanho, ALLEGRO_BITMAP* disparo);
-void LiberaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo);
-void AtualizaMonstros(Monstro monstro[], int tamanho);
-void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo, int* pontuacao);
-void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int* pontuacao);
 
 int main() {
     // VARIÁVEIS DO JOGO
@@ -33,7 +29,7 @@ int main() {
     Monstro monstro[NUM_MONSTROS];
     Tiro tiro[NUM_TIRO];
 
-    int* pontuacao = (int*)malloc(sizeof(int));
+    int * pontuacao = (int*)malloc(sizeof(int));
     *pontuacao = 0;
 
     InicializaNave(&nave);
@@ -90,6 +86,7 @@ int main() {
     al_set_window_position(display, 200, 200);
     al_set_window_title(display, "A gente vai conseguir, galera! Foco!");
 
+    // INICIALIZAÇÃO DAS FONTES
     al_init_font_addon();
     al_init_ttf_addon();
 
@@ -240,18 +237,18 @@ int main() {
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
-//al_draw_text(font, al_map_rgb(0, 0, 0), 7, 7, 0, "Space invaders");
-            al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Pontuacao: %d", *pontuacao);
-           // char* ponto = *pontuacao;
+            al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Pontuação: %d", *pontuacao);
             
-//al_draw_textf(font, al_map_rgb(255, 255, 255), 250, 5, 0, %);
             DesenhaMonstros(monstro, NUM_MONSTROS, inimigo, pontuacao);
+
+            // DESENHA A NAVE
             al_draw_rotated_bitmap(sprite, 10, 10, nave.x, nave.y, ALLEGRO_PI / 2, 0);
             DesenhaTiros(tiro, NUM_TIRO, disparo);
             al_flip_display();
         }
     }
 
+    // Encerra o jogo, libera a memória
     al_destroy_bitmap(bg);
     al_destroy_bitmap(sprite);
     al_destroy_bitmap(disparo);
@@ -268,85 +265,13 @@ int main() {
 void InicializaNave(Nave* nave) {
     nave->x = 0;
     nave->y = 600;
+    nave->vida = 500;
     nave->velocidade = 10;
 }
 
 
-void InitTiros(Tiro tiros[], int tamanho) {
-    for (int i = 0; i < tamanho; i++) {
-        tiros[i].velocidade = 15;
-        tiros[i].ativo = false;
-    }
-}
 
-void AtirarTiros(Tiro tiros[], Nave nave, int tamanho, ALLEGRO_BITMAP* disparo) {
-    for (int i = 0; i < tamanho; i++) {
-        if (!tiros[i].ativo) {
-            tiros[i].x = nave.x + (al_get_bitmap_width(disparo) / 2) - (al_get_bitmap_width(disparo) / 2);
-            tiros[i].y = nave.y + 40;
-            tiros[i].ativo = true;
-            break;
-        }
-    }
-}
 
-void AtualizaTiros(Tiro tiros[], int tamanho) {
-    for (int i = 0; i < tamanho; i++) {
-        if (tiros[i].ativo) {
-            tiros[i].x += tiros[i].velocidade;
-            if (tiros[i].x > largura) {
-                tiros[i].ativo = false;
-            }
-        }
-    }
-}
-
-void DesenhaTiros(Tiro tiros[], int tamanho, ALLEGRO_BITMAP* disparo) {
-    for (int i = 0; i < tamanho; i++) {
-        if (tiros[i].ativo) {
-            al_draw_bitmap(disparo, tiros[i].x, tiros[i].y, 0);
-        }
-    }
-}
-
-void InicializaMonstro(Monstro* monstro, int tamanho){
-    for (int i = 0; i < tamanho; i++) {
-        monstro[i].velocidade = 5;
-        monstro[i].ativo = false;
-        monstro[i].borda_x = 50;
-        monstro[i].borda_y = 50;
-        monstro[i].pontuacao = 100;
-    }
-}
-void LiberaMonstros(Monstro monstro[], int tamanho) {
-    for (int i = 0; i < tamanho; i++) {
-        if (!monstro[i].ativo){
-            if (rand() % 500 == 0) {
-                monstro[i].x = largura;
-                monstro[i].y = rand() % (altura - 60);
-                monstro[i].ativo = true;
-                break;
-            }
-        }
-    }
-}
-void AtualizaMonstros(Monstro monstro[], int tamanho) {
-    for (int i = 0; i < tamanho; i++) {
-        if (monstro[i].ativo) {
-            monstro[i].x -= monstro[i].velocidade;
-            if (monstro[i].x < 0) {
-                monstro[i].ativo = false;
-            }
-        }
-    }
-}
-void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo) {
-    for (int i = 0; i < tamanho; i++) {
-        if (monstro[i].ativo){
-            al_draw_bitmap(inimigo, monstro[i].x, monstro[i].y, 20);
-        }
-    }
-}
 void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int * pontuacao) {
     for (int i = 0; i < tamanho_tiro; i++) {
         if (tiros[i].ativo) {
