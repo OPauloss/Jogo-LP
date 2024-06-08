@@ -51,7 +51,7 @@ int main() {
         return -1;
     }
 
-    if (!al_reserve_samples(4)) {
+    if (!al_reserve_samples(2)) {
         fprintf(stderr, "Falha ao reservar samples de áudio.\n");
         return -1;
     }
@@ -84,7 +84,7 @@ int main() {
     }
 
     al_set_window_position(display, 200, 200);
-    al_set_window_title(display, "Star Fighter");
+    al_set_window_title(display, "A gente vai conseguir, galera! Foco!");
 
     // INICIALIZAÇÃO DAS FONTES
     al_init_font_addon();
@@ -127,34 +127,15 @@ int main() {
         return -1;
     }
 
-
-
-    ALLEGRO_BITMAP* bgGameOver = al_load_bitmap("./gameOver.jpg");
-
-    ALLEGRO_BITMAP* bgMenu = al_load_bitmap("./bgMenu.png");
-
-    if (!bgMenu) {
-        fprintf(stderr, "Falha ao carregar o background.\n");
-        return -1;
-    }
-
-    ALLEGRO_BITMAP* scoreMenu = al_load_bitmap("./Score.png");
-    if (!scoreMenu) {
-        fprintf(stderr, "Falha ao carregar o background.\n");
-        return -1;
-    }
     // DEFINIÇÕES DE SAMPLE
-    ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav"); //SOM BACKGROUND
-    ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav"); // SOM DISPARO
-    ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav"); // SOM COLISAO
-    ALLEGRO_SAMPLE* sample_4 = al_load_sample("./menusound.wav");  // SOM MENU
-    ALLEGRO_SAMPLE* sample_5 = al_load_sample("./gameOver.wav");    // SOM GAME OVER
+    ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav");
+    ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav");
+    ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav");
     if (!sample) {
         fprintf(stderr, "Falha ao carregar o áudio.\n");
         return -1;
     }
 
-    ALLEGRO_SAMPLE_ID sample_id_4;
     ALLEGRO_EVENT_QUEUE* event_queue = al_create_event_queue();
     if (!event_queue) {
         fprintf(stderr, "Falha ao criar a fila de eventos.\n");
@@ -168,83 +149,19 @@ int main() {
     al_start_timer(timer);
 
 
-    // // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
-    // al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+    // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
+    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
 
     bool key_up = false;
     bool key_down = false;
     bool key_left = false;
     bool key_right = false;
 
-    bool telainicial = true;
-    bool running = true;
-    bool telaScore = false;
-    bool telagameOver = false;
-
-    al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
-
-    void telaInicial(bool verificador){
-        al_clear_to_color(al_map_rgb(0, 0, 0));
-        al_draw_bitmap(bgMenu,(1280 - largura)/2, (720 - altura)/2,0);
-        al_flip_display();
-    }
-    while (running) {
+    while (true) {
         ALLEGRO_EVENT event;
         al_wait_for_event(event_queue, &event);
-
-        if (telainicial) {
-            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                running = false;
-            } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-                if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-                    telainicial = false;  
-                    al_stop_sample(&sample_id_4);
-                    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
-                }
-                if (event.keyboard.keycode == ALLEGRO_KEY_S) {
-                    telainicial = false;
-                    telaScore = true;
-                }
-            }
-            telaInicial(telainicial);
-
-        }else if(telaScore){
-            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                running = false;
-            }
-            al_clear_to_color(al_map_rgb(0, 0, 0));
-            al_draw_bitmap(scoreMenu,(1280 - largura)/2, (720 - altura)/2,0);
-            al_flip_display();
-            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE)
-            {
-                telaScore = false;
-                telainicial = true;
-                telaInicial(telaInicial);
-            }
-            else if(event.keyboard.keycode == ALLEGRO_KEY_X){
-                al_stop_sample(&sample_id_4);
-                al_play_sample(sample_5, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                telaScore = false;
-                telagameOver = true;
-            }
-            
-        }
-        else if (telagameOver) {
-            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                running = false;
-            }
-            al_clear_to_color(al_map_rgb(0, 0, 0));
-            al_draw_bitmap(bgGameOver, (1280 - largura)/2, (720 - altura)/2, 0);
-            al_flip_display();
-            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
-                telagameOver = false;
-                telainicial = true;
-                telaInicial(telaInicial);
-            } 
-        }
-        else {
-            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-                running = false;
+        if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+            break;
         }
         else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
             switch (event.keyboard.keycode) {
@@ -319,7 +236,7 @@ int main() {
             BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS, pontuacao);
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
-            al_draw_bitmap(bg,(1280 - largura)/2, (720 - altura)/2,0);
+            al_draw_bitmap(bg, 0, 0, 0);
             al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Pontuação: %d", *pontuacao);
             
             DesenhaMonstros(monstro, NUM_MONSTROS, inimigo, pontuacao);
@@ -330,13 +247,10 @@ int main() {
             al_flip_display();
         }
     }
-    }
 
     // Encerra o jogo, libera a memória
-    al_destroy_bitmap(scoreMenu);
-    al_destroy_bitmap(bgMenu);
+    al_destroy_bitmap(bg);
     al_destroy_bitmap(sprite);
-    al_destroy_bitmap(bgGameOver);
     al_destroy_bitmap(disparo);
     al_destroy_font(font);
     al_destroy_display(display);
@@ -344,8 +258,7 @@ int main() {
     al_destroy_sample(sample);
     al_destroy_sample(sample_2);
     al_destroy_sample(sample_3);
-    al_destroy_sample(sample_4);
-    al_destroy_sample(sample_5);
+
     return 0;
 }
 
@@ -374,5 +287,37 @@ void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho
                 }
             }
         }
+    }
+}
+
+No* enfilar_comeco(No** fila, int valor) {
+    No* novo = malloc(sizeof(No));
+    if (novo) {
+        novo->dado = valor;
+        novo->proximo = *fila;
+        *fila = novo;
+    }
+    else {
+        printf("Erro ao alocar memoria");
+    }
+}
+
+No* remover_final(No** fila) {
+    No* aux = *fila;
+    No* ant = NULL;
+    if (*fila == NULL) {
+        printf("A fila está vazia");
+        return NULL;
+    }
+    while (aux->proximo != NULL) {
+        ant = aux;
+        aux = aux->proximo;
+    }
+    if (ant == NULL) {
+        free(aux);
+        *fila = NULL;
+    }
+    else {
+        ant->proximo = NULL;
     }
 }

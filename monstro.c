@@ -14,7 +14,6 @@ void LiberaMonstros(Monstro monstro[], int tamanho , ALLEGRO_BITMAP* inimigo) {
         if (!monstro[i].ativo) {
             if (rand() % 500 == 0) {
                 monstro[i].x = largura;
-                
                 monstro[i].y = rand() % (altura - 60);
                 monstro[i].ativo = true;
                 break;
