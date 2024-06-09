@@ -12,7 +12,6 @@
 #include "disparo_nave.c"
 #include "disparo_nave.h"
 
-/// valendo
 
 #define NUM_TIRO 20
 #define NUM_MONSTROS 10
@@ -22,6 +21,7 @@
 
 // PROTÓTIPOS
 void InicializaNave(Nave* nave);
+void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu);
 
 int main() {
     // VARIÁVEIS DO JOGO
@@ -51,7 +51,7 @@ int main() {
         return -1;
     }
 
-    if (!al_reserve_samples(2)) {
+    if (!al_reserve_samples(5)) {
         fprintf(stderr, "Falha ao reservar samples de áudio.\n");
         return -1;
     }
@@ -123,14 +123,35 @@ int main() {
 
     ALLEGRO_BITMAP* bg = al_load_bitmap("./R.jpg");
     if (!bg) {
-        fprintf(stderr, "Falha ao carregar o background.\n");
+        fprintf(stderr, "Falha ao carregar o background.\n");                                                //TROQUEI BACKGROUND DO bg, bgGameOver, bgMenu e scoreMenu
         return -1;
     }
 
+    ALLEGRO_BITMAP* bgGameOver = al_load_bitmap("./gameOver.jpg");
+    if (!bgGameOver) {
+        fprintf(stderr, "Falha ao carregar o background do GameOver.\n");
+        return -1;
+    }
+    ALLEGRO_BITMAP* bgMenu = al_load_bitmap("./bgMenu.png");
+
+    if (!bgMenu) {
+        fprintf(stderr, "Falha ao carregar o background do Menu.\n");
+        return -1;
+    }
+
+    ALLEGRO_BITMAP* scoreMenu = al_load_bitmap("./Score.png");
+    if (!scoreMenu) {
+        fprintf(stderr, "Falha ao carregar o background do Socre.\n");
+        return -1;
+    }
     // DEFINIÇÕES DE SAMPLE
-    ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav");
-    ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav");
-    ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav");
+    ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav"); //SOM BACKGROUND                               =============SAMPLES ADICIONADOS===============
+    ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav"); // SOM DISPARO
+    ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav"); // SOM COLISAO
+    ALLEGRO_SAMPLE* sample_4 = al_load_sample("./menusound.wav");  // SOM MENU
+    ALLEGRO_SAMPLE* sample_5 = al_load_sample("./gameOver.wav");    // SOM GAME OVER
+    ALLEGRO_SAMPLE_ID sample_id_4;
+
     if (!sample) {
         fprintf(stderr, "Falha ao carregar o áudio.\n");
         return -1;
@@ -149,20 +170,83 @@ int main() {
     al_start_timer(timer);
 
 
-    // INICIA A REPRODUÇÃO DA MÚSICA DE FUNDO
-    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+    
 
     bool key_up = false;
     bool key_down = false;
     bool key_left = false;
     bool key_right = false;
 
-    while (true) {
+
+    bool telainicial = true;
+    bool running = true;
+    bool telaScore = false;
+    bool telagameOver = false;
+
+    //INICIA A MUSICA DO MENU
+    al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+
+    
+
+    while (running) {
         ALLEGRO_EVENT event;
         al_wait_for_event(event_queue, &event);
-        if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-            break;
+
+        if (telainicial) {          //ACRESCENTADO COMO TELA INICIAL
+            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                running = false;
+            } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+                if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
+                    telainicial = false;  
+                    printf("Cheguei aqui\n");
+                   al_stop_sample(sample_4);
+                    al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+                }
+                if (event.keyboard.keycode == ALLEGRO_KEY_S) {
+                    telainicial = false;
+                    telaScore = true;
+                }
+            }
+           // telainicial = true;
+           telaInicial(telainicial, bgMenu);
+        }else if(telaScore){ // ACRESCENTANDO TELA DE SCORE
+            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                running = false;
+            }
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+            al_draw_bitmap(scoreMenu,(1280 - largura)/2, (720 - altura)/2,0);
+            al_flip_display();
+            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE)
+            {
+                telaScore = false;
+                telainicial = true;
+                telaInicial(telaInicial, bgMenu);
+            }
+            else if(event.keyboard.keycode == ALLEGRO_KEY_X){
+                al_stop_sample(&sample_id_4);
+                al_play_sample(sample_5, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
+                telaScore = false;
+                telagameOver = true;
+            }
+            
         }
+        else if (telagameOver) { // ACRESCENTANDO TELA DE GAME OVER
+            if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+                running = false;
+            }
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+            al_draw_bitmap(bgGameOver, (1280 - largura)/2, (720 - altura)/2, 0);
+            al_flip_display();
+            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
+                telagameOver = false;
+                telainicial = true;
+                telaInicial(telaInicial, bgMenu);
+            } 
+        }
+        else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) 
+                running = false;
+        
+        
         else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
             switch (event.keyboard.keycode) {
             case ALLEGRO_KEY_W:
@@ -269,9 +353,6 @@ void InicializaNave(Nave* nave) {
     nave->velocidade = 10;
 }
 
-
-
-
 void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int * pontuacao) {
     for (int i = 0; i < tamanho_tiro; i++) {
         if (tiros[i].ativo) {
@@ -282,12 +363,21 @@ void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho
                     tiros[i].y + 20 > (monstro[j].y)) {
                     tiros[i].ativo = false;
                     monstro[j].ativo = false;
+                    monstro[j].borda_x = 0;
+                    monstro[j].borda_y = 0;
                     *pontuacao += monstro[i].pontuacao;
                     break;
                 }
             }
         }
     }
+}
+
+
+void telaInicial(bool verificador, ALLEGRO_BITMAP * bgMenu) {
+    al_clear_to_color(al_map_rgb(0, 0, 0));
+    al_draw_bitmap(bgMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
+    al_flip_display();
 }
 
 No* enfilar_comeco(No** fila, int valor) {
