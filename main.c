@@ -22,6 +22,7 @@
 // PROTÓTIPOS
 void InicializaNave(Nave* nave);
 void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu);
+void telaGameOver(bool verificador, ALLEGRO_BITMAP* bgGameOver);
 
 int main() {
     // VARIÁVEIS DO JOGO
@@ -184,7 +185,7 @@ int main() {
     bool telagameOver = false;
 
     //INICIA A MUSICA DO MENU
-    al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+   // al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
 
     
 
@@ -199,7 +200,7 @@ int main() {
                 if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
                     telainicial = false;  
                     printf("Cheguei aqui\n");
-                   al_stop_sample(sample_4);
+                 // al_stop_sample(sample_4);
                     al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_S) {
@@ -318,15 +319,18 @@ int main() {
             LiberaMonstros(monstro, NUM_MONSTROS, inimigo);
             AtualizaMonstros(monstro, NUM_MONSTROS);
             BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS, pontuacao);
+            NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao);
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
             al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Pontuação: %d", *pontuacao);
-            
+
             DesenhaMonstros(monstro, NUM_MONSTROS, inimigo, pontuacao);
 
             // DESENHA A NAVE
-            al_draw_rotated_bitmap(sprite, 10, 10, nave.x, nave.y, ALLEGRO_PI / 2, 0);
+            if (nave.ativo) {
+                al_draw_rotated_bitmap(sprite, 10, 10, nave.x, nave.y, ALLEGRO_PI / 2, 0);
+            }
             DesenhaTiros(tiro, NUM_TIRO, disparo);
             al_flip_display();
         }
@@ -342,32 +346,48 @@ int main() {
     al_destroy_sample(sample);
     al_destroy_sample(sample_2);
     al_destroy_sample(sample_3);
+    free(pontuacao);
 
     return 0;
 }
 
 void InicializaNave(Nave* nave) {
-    nave->x = 0;
-    nave->y = 600;
-    nave->vida = 500;
-    nave->velocidade = 10;
+        nave->x = 0;
+        nave->y = 600;
+        nave->borda_x = 50;
+        nave->borda_y = 50;
+        nave->vida = 3;
+        nave->velocidade = 10; 
+    
 }
 
-void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int * pontuacao) {
+void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int* pontuacao) {
     for (int i = 0; i < tamanho_tiro; i++) {
         if (tiros[i].ativo) {
             for (int j = 0; j < tamanho_monstro; j++) {
                 if (tiros[i].x < (monstro[j].x + monstro[j].borda_x) &&
                     tiros[i].x + 20 >(monstro[j].x) &&
                     tiros[i].y < (monstro[j].y + monstro[j].borda_y) &&
-                    tiros[i].y + 20 > (monstro[j].y)) {
+                    tiros[i].y + 20 >(monstro[j].y) && monstro[j].ativo) {
                     tiros[i].ativo = false;
                     monstro[j].ativo = false;
-                    monstro[j].borda_x = 0;
-                    monstro[j].borda_y = 0;
                     *pontuacao += monstro[i].pontuacao;
-                    break;
                 }
+            }
+        }
+    }
+}
+
+void NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontuacao) {
+    for (int i = 0; i < tamanho_monstro; i++) {
+        if (monstro[i].ativo) {
+            if ((monstro[i].x - monstro[i].borda_x + 100) < (nave->x + nave->borda_x) &&
+                (monstro[i].x + monstro[i].borda_x) > (nave->x - nave->borda_x) &&
+                (monstro[i].y - monstro[i].borda_y) < (nave->y + nave->borda_y) &&
+                (monstro[i].y + monstro[i].borda_y) > (nave->y - nave->borda_y)) {
+
+                monstro[i].ativo = false;
+                nave->ativo = false;
             }
         }
     }
@@ -378,36 +398,4 @@ void telaInicial(bool verificador, ALLEGRO_BITMAP * bgMenu) {
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_bitmap(bgMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
     al_flip_display();
-}
-
-No* enfilar_comeco(No** fila, int valor) {
-    No* novo = malloc(sizeof(No));
-    if (novo) {
-        novo->dado = valor;
-        novo->proximo = *fila;
-        *fila = novo;
-    }
-    else {
-        printf("Erro ao alocar memoria");
-    }
-}
-
-No* remover_final(No** fila) {
-    No* aux = *fila;
-    No* ant = NULL;
-    if (*fila == NULL) {
-        printf("A fila está vazia");
-        return NULL;
-    }
-    while (aux->proximo != NULL) {
-        ant = aux;
-        aux = aux->proximo;
-    }
-    if (ant == NULL) {
-        free(aux);
-        *fila = NULL;
-    }
-    else {
-        ant->proximo = NULL;
-    }
 }

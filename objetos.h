@@ -1,4 +1,4 @@
-typedef struct{
+typedef struct Nave{
     int x;
     int y;
     int velocidade;
@@ -6,6 +6,7 @@ typedef struct{
     int borda_y;
     int pontos;
     int vida;
+    bool ativo;
 }Nave;
 
 typedef struct no{
