@@ -11,6 +11,8 @@
 #include "monstro.h"
 #include "disparo_nave.c"
 #include "disparo_nave.h"
+//#include "hiscore.c"
+//#include "hiscore.h"
 
 
 #define NUM_TIRO 20
@@ -30,8 +32,11 @@ int main() {
     Monstro monstro[NUM_MONSTROS];
     Tiro tiro[NUM_TIRO];
 
-    int * pontuacao = (int*)malloc(sizeof(int));
-    *pontuacao = 0;
+    int * pontuacao = (int*) malloc (sizeof(int));
+    if (pontuacao != NULL) {
+        * pontuacao = 0;
+    }
+   
 
     InicializaNave(&nave);
     InicializaMonstro(monstro, NUM_MONSTROS);
@@ -170,8 +175,7 @@ int main() {
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_start_timer(timer);
 
-
-    
+      
 
     bool key_up = false;
     bool key_down = false;
@@ -184,10 +188,12 @@ int main() {
     bool telaScore = false;
     bool telagameOver = false;
 
-    //INICIA A MUSICA DO MENU
-   // al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
-
     
+
+    //INICIA A MUSICA DO MENU
+    al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+
+   // inicializaHiScores();
 
     while (running) {
         ALLEGRO_EVENT event;
@@ -199,8 +205,7 @@ int main() {
             } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
                     telainicial = false;  
-                    printf("Cheguei aqui\n");
-                 // al_stop_sample(sample_4);
+                   // al_stop_sample(sample_4);
                     al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_S) {
@@ -323,7 +328,9 @@ int main() {
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
-            al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Pontuação: %d", *pontuacao);
+            if (pontuacao != NULL) {
+                al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "Pontuação: %d", *pontuacao);
+            }            
 
             DesenhaMonstros(monstro, NUM_MONSTROS, inimigo, pontuacao);
 
@@ -385,9 +392,18 @@ void NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontu
                 (monstro[i].x + monstro[i].borda_x) > (nave->x - nave->borda_x) &&
                 (monstro[i].y - monstro[i].borda_y) < (nave->y + nave->borda_y) &&
                 (monstro[i].y + monstro[i].borda_y) > (nave->y - nave->borda_y)) {
-
+                printf("Colidiu! %d %d %d %d", nave->x, nave->y, monstro[i].x, monstro[i].y);
                 monstro[i].ativo = false;
-                nave->ativo = false;
+                
+                nave->vida--;
+                if (nave-> vida == 0) {
+                    nave->ativo = false;
+                   
+                        // envia flag para o main, para abrir a tela de HiScores
+                 
+                        // envia flag para o main, para abrir a tela de Game Over
+                    
+                }
             }
         }
     }

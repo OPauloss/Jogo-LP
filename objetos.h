@@ -25,11 +25,6 @@ typedef struct{
     bool ativo;
 }Monstro;
 
-typedef struct megaAsteroide{
-    int qtd_asteroides;
-    Monstro monstro;
-} megaAsteroide;
-
 typedef struct {
     int x;
     int y;
@@ -37,3 +32,10 @@ typedef struct {
     bool ativo;
     int dano;
 }Tiro;
+
+typedef struct HiScore
+{
+    long int pontuacao[10];
+    int posicao[10];
+    char* nome[10][3];
+} HiScore;
