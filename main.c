@@ -11,8 +11,8 @@
 #include "monstro.h"
 #include "disparo_nave.c"
 #include "disparo_nave.h"
-//#include "hiscore.c"
-//#include "hiscore.h"
+#include "hiscore.c"
+#include "hiscore.h"
 
 
 #define NUM_TIRO 20
@@ -21,10 +21,18 @@
 #define altura 720
 #define FPS 60
 
+// INICIALIZACAO
+// HiScore * hiscore = (HiScore*) malloc (sizeof(HiScore * NUM_HISCORES));
+// FILE * hiscores_arquivo;
+// hiscores_arquivo = fopen("hiscores_iniciais.txt", "r");
+// hiscore = (HiScore*) armazenaHiscores(hiscores_arquivo);
+
+
 // PROTÓTIPOS
 void InicializaNave(Nave* nave);
 void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu);
 void telaGameOver(bool verificador, ALLEGRO_BITMAP* bgGameOver);
+//int testaHighScore(long int *pontuacao);
 
 int main() {
     // VARIÁVEIS DO JOGO
@@ -90,11 +98,12 @@ int main() {
     }
 
     al_set_window_position(display, 200, 200);
-    al_set_window_title(display, "A gente vai conseguir, galera! Foco!");
+    al_set_window_title(display, "Star Fighter");
 
     // INICIALIZAÇÃO DAS FONTES
     al_init_font_addon();
     al_init_ttf_addon();
+
 
     ALLEGRO_FONT* font = al_load_font("./font.ttf", 25, 0);
     if (!font) {
@@ -108,7 +117,7 @@ int main() {
         return -1;
     }
 
-    // DEFINIÇÕES DE BITMAP
+    //DEFINIÇÕES DE BITMAP
     ALLEGRO_BITMAP* sprite = al_load_bitmap("./nave_resized.png");
     if (!sprite) {
         fprintf(stderr, "Falha ao carregar o sprite da nave.\n");
@@ -228,24 +237,31 @@ int main() {
                 telainicial = true;
                 telaInicial(telaInicial, bgMenu);
             }
-            else if(event.keyboard.keycode == ALLEGRO_KEY_X){
-                al_stop_sample(&sample_id_4);
-                al_play_sample(sample_5, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL);
-                telaScore = false;
-                telagameOver = true;
-            }
             
         }
         else if (telagameOver) { // ACRESCENTANDO TELA DE GAME OVER
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
             }
+            
             al_clear_to_color(al_map_rgb(0, 0, 0));
             al_draw_bitmap(bgGameOver, (1280 - largura)/2, (720 - altura)/2, 0);
             al_flip_display();
-            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {
+            
+
+            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {          ///////////////GAME OVER FUNCIONAL
                 telagameOver = false;
                 telainicial = true;
+                key_up = false;
+                key_down = false;
+                key_left = false;
+                key_right = false;
+
+                * pontuacao = 0;
+
+                printf(" pontuacao = %d", *pontuacao);
+                InicializaNave(&nave);                     //por que tem que ser ponto ao inves de ->?
+                
                 telaInicial(telaInicial, bgMenu);
             } 
         }
@@ -324,7 +340,12 @@ int main() {
             LiberaMonstros(monstro, NUM_MONSTROS, inimigo);
             AtualizaMonstros(monstro, NUM_MONSTROS);
             BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS, pontuacao);
-            NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao);
+            int naveColidida = NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao); ///////////////////////////////////////////////////////////////////////
+            if (naveColidida) {
+                telagameOver = true;
+                al_stop_samples(); // Para qualquer música ou som em andamento
+                al_play_sample(sample_5, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Toca o som de Game Over
+            }
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
@@ -353,8 +374,6 @@ int main() {
     al_destroy_sample(sample);
     al_destroy_sample(sample_2);
     al_destroy_sample(sample_3);
-    free(pontuacao);
-
     return 0;
 }
 
@@ -365,7 +384,7 @@ void InicializaNave(Nave* nave) {
         nave->borda_y = 50;
         nave->vida = 3;
         nave->velocidade = 10; 
-    
+        nave->ativo = true;
 }
 
 void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int* pontuacao) {
@@ -385,7 +404,7 @@ void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho
     }
 }
 
-void NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontuacao) {
+int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontuacao) {///////////////////////////////////////
     for (int i = 0; i < tamanho_monstro; i++) {
         if (monstro[i].ativo) {
             if ((monstro[i].x - monstro[i].borda_x + 100) < (nave->x + nave->borda_x) &&
@@ -398,7 +417,7 @@ void NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontu
                 nave->vida--;
                 if (nave-> vida == 0) {
                     nave->ativo = false;
-                   
+                    return 1;
                         // envia flag para o main, para abrir a tela de HiScores
                  
                         // envia flag para o main, para abrir a tela de Game Over
@@ -407,6 +426,7 @@ void NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontu
             }
         }
     }
+    return 0;
 }
 
 

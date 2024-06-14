@@ -9,12 +9,8 @@ typedef struct Nave{
     bool ativo;
 }Nave;
 
-typedef struct no{
-    int dado;
-    struct no *proximo;
-}No;
 
-typedef struct{
+typedef struct Monstro{
     int x;
     int y;
     int velocidade;
@@ -25,7 +21,7 @@ typedef struct{
     bool ativo;
 }Monstro;
 
-typedef struct {
+typedef struct Tiro{
     int x;
     int y;
     int velocidade;
