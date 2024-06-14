@@ -343,6 +343,7 @@ int main() {
             int naveColidida = NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao); ///////////////////////////////////////////////////////////////////////
             if (naveColidida) {
                 telagameOver = true;
+                InicializaMonstro(monstro, NUM_MONSTROS);
                 al_stop_samples(); // Para qualquer música ou som em andamento
                 al_play_sample(sample_5, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Toca o som de Game Over
             }
