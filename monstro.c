@@ -18,7 +18,10 @@ void LiberaMonstros(Monstro monstro[], int tamanho , ALLEGRO_BITMAP* inimigo) {
                 monstro[i].borda_x = 50;
                 monstro[i].borda_y = 50;
                 monstro[i].ativo = true;
-                monstro[i].velocidade *= (1.3);
+                if (monstro[i].velocidade < 75) {
+                    monstro[i].velocidade *= (1.3);
+                } else
+                    monstro[i].velocidade = 75;           
 
                 
             }

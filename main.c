@@ -11,15 +11,17 @@
 #include "monstro.h"
 #include "disparo_nave.c"
 #include "disparo_nave.h"
-#include "hiscore.c"
-#include "hiscore.h"
+//#include "hiscore.c"
+#include "hiscores.h"
 
 
 #define NUM_TIRO 20
-#define NUM_MONSTROS 10
+#define NUM_MONSTROS 12
 #define largura 1280
 #define altura 720
 #define FPS 60
+#define MAXHISCORE 999999
+#define NUM_HISCORES 10
 
 // INICIALIZACAO
 // HiScore * hiscore = (HiScore*) malloc (sizeof(HiScore * NUM_HISCORES));
@@ -28,23 +30,38 @@
 // hiscore = (HiScore*) armazenaHiscores(hiscores_arquivo);
 
 
-// PROTÃ“TIPOS
+// PROTÓTIPOS
 void InicializaNave(Nave* nave);
 void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu);
 void telaGameOver(bool verificador, ALLEGRO_BITMAP* bgGameOver);
 //int testaHighScore(long int *pontuacao);
 
 int main() {
-    // VARIÃVEIS DO JOGO
+    // VARIÁVEIS DO JOGO
     Nave nave;
     Monstro monstro[NUM_MONSTROS];
     Tiro tiro[NUM_TIRO];
+    int i;
+    char* buffer = (char*)malloc(sizeof(char) * 30);
 
-    int * pontuacao = (int*) malloc (sizeof(int));
-    if (pontuacao != NULL) {
-        * pontuacao = 0;
+    FILE* arquivo_inicial;
+
+    arquivo_inicial = fopen("hiscore_inicial.txt", "r");
+    if (arquivo_inicial == NULL)
+    {
+        ferror;
+        printf("Erro");
     }
-   
+
+    HiScore* hiscore = (HiScore*)malloc(sizeof(HiScore) * NUM_HISCORES + 1);
+    hiscore = armazenaHiscores(arquivo_inicial, &hiscore);
+
+   // printf("%c%c%c", (char*) hiscore->nome[5][0], (char*) hiscore->nome[5][1], (char*) hiscore->nome[5][2]);
+
+    int* pontuacao = (int*)malloc(sizeof(int));
+    if (pontuacao != NULL) {
+        *pontuacao = 0;
+    }
 
     InicializaNave(&nave);
     InicializaMonstro(monstro, NUM_MONSTROS);
@@ -56,17 +73,17 @@ int main() {
     }
 
     if (!al_install_audio()) {
-        fprintf(stderr, "Falha ao inicializar o Ã¡udio.\n");
+        fprintf(stderr, "Falha ao inicializar o áudio.\n");
         return -1;
     }
 
     if (!al_init_acodec_addon()) {
-        fprintf(stderr, "Falha ao inicializar os codecs de Ã¡udio.\n");
+        fprintf(stderr, "Falha ao inicializar os codecs de áudio.\n");
         return -1;
     }
 
     if (!al_reserve_samples(5)) {
-        fprintf(stderr, "Falha ao reservar samples de Ã¡udio.\n");
+        fprintf(stderr, "Falha ao reservar samples de áudio.\n");
         return -1;
     }
 
@@ -90,7 +107,7 @@ int main() {
         return -1;
     }
 
-    // CRIAÃ‡ÃƒO DE DISPLAY E OUTROS COMPONENTES
+    // CRIAÇÃO DE DISPLAY E OUTROS COMPONENTES
     ALLEGRO_DISPLAY* display = al_create_display(largura, altura);
     if (!display) {
         fprintf(stderr, "Falha ao criar o display.\n");
@@ -100,7 +117,7 @@ int main() {
     al_set_window_position(display, 200, 200);
     al_set_window_title(display, "Star Fighter");
 
-    // INICIALIZAÃ‡ÃƒO DAS FONTES
+    // INICIALIZAÇÃO DAS FONTES
     al_init_font_addon();
     al_init_ttf_addon();
 
@@ -117,7 +134,7 @@ int main() {
         return -1;
     }
 
-    //DEFINIÃ‡Ã•ES DE BITMAP
+    //DEFINIÇÕES DE BITMAP
     ALLEGRO_BITMAP* sprite = al_load_bitmap("./nave_resized.png");
     if (!sprite) {
         fprintf(stderr, "Falha ao carregar o sprite da nave.\n");
@@ -159,7 +176,7 @@ int main() {
         fprintf(stderr, "Falha ao carregar o background do Socre.\n");
         return -1;
     }
-    // DEFINIÃ‡Ã•ES DE SAMPLE
+    // DEFINIÇÕES DE SAMPLE
     ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav"); //SOM BACKGROUND                               =============SAMPLES ADICIONADOS===============
     ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav"); // SOM DISPARO
     ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav"); // SOM COLISAO
@@ -168,7 +185,7 @@ int main() {
     ALLEGRO_SAMPLE_ID sample_id_4;
 
     if (!sample) {
-        fprintf(stderr, "Falha ao carregar o Ã¡udio.\n");
+        fprintf(stderr, "Falha ao carregar o áudio.\n");
         return -1;
     }
 
@@ -184,7 +201,7 @@ int main() {
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_start_timer(timer);
 
-      
+
 
     bool key_up = false;
     bool key_down = false;
@@ -197,12 +214,12 @@ int main() {
     bool telaScore = false;
     bool telagameOver = false;
 
-    
+
 
     //INICIA A MUSICA DO MENU
-    al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+   // al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
 
-   // inicializaHiScores();
+    // inicializaHiScores();
 
     while (running) {
         ALLEGRO_EVENT event;
@@ -211,10 +228,11 @@ int main() {
         if (telainicial) {          //ACRESCENTADO COMO TELA INICIAL
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
-            } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+            }
+            else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
-                    telainicial = false;  
-                   // al_stop_sample(sample_4);
+                    telainicial = false;
+                  //  al_stop_sample(sample_4);
                     al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_S) {
@@ -222,14 +240,22 @@ int main() {
                     telaScore = true;
                 }
             }
-           // telainicial = true;
-           telaInicial(telainicial, bgMenu);
-        }else if(telaScore){ // ACRESCENTANDO TELA DE SCORE
+            // telainicial = true;
+            telaInicial(telainicial, bgMenu);
+        }
+        else if (telaScore) { // ACRESCENTANDO TELA DE SCORE
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
             }
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            al_draw_bitmap(scoreMenu,(1280 - largura)/2, (720 - altura)/2,0);
+            al_draw_bitmap(scoreMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
+
+            for (i = 0; i < NUM_HISCORES; i++) {
+                printf("%d %ld %s\n", i+1, hiscore->pontuacao[i], (char*) hiscore->nome[i]);
+                al_draw_textf(font, al_map_rgb(255, 255, 254), largura / 3 + 90, 250 +40*i, 0, "%d %ld %s", (int)i + 1,
+                    (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
+            }            
+
             al_flip_display();
             if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE)
             {
@@ -237,17 +263,17 @@ int main() {
                 telainicial = true;
                 telaInicial(telaInicial, bgMenu);
             }
-            
+
         }
         else if (telagameOver) { // ACRESCENTANDO TELA DE GAME OVER
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
             }
-            
+
             al_clear_to_color(al_map_rgb(0, 0, 0));
-            al_draw_bitmap(bgGameOver, (1280 - largura)/2, (720 - altura)/2, 0);
+            al_draw_bitmap(bgGameOver, (1280 - largura) / 2, (720 - altura) / 2, 0);
             al_flip_display();
-            
+
 
             if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {          ///////////////GAME OVER FUNCIONAL
                 telagameOver = false;
@@ -257,18 +283,18 @@ int main() {
                 key_left = false;
                 key_right = false;
 
-                * pontuacao = 0;
+                *pontuacao = 0;
 
-                printf(" pontuacao = %d", *pontuacao);
+               // printf(" pontuacao = %d", *pontuacao);
                 InicializaNave(&nave);                     //por que tem que ser ponto ao inves de ->?
-                
+
                 telaInicial(telaInicial, bgMenu);
-            } 
+            }
         }
-        else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) 
-                running = false;
-        
-        
+        else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+            running = false;
+
+
         else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
             switch (event.keyboard.keycode) {
             case ALLEGRO_KEY_W:
@@ -288,7 +314,7 @@ int main() {
                 key_right = true;
                 break;
             case ALLEGRO_KEY_SPACE:
-                al_play_sample(sample_2, 0.5, 0.0, 3.0, ALLEGRO_PLAYMODE_ONCE, NULL);//0.5 Ã© o som e 3.0 Ã© a velocidade
+                al_play_sample(sample_2, 0.5, 0.0, 3.0, ALLEGRO_PLAYMODE_ONCE, NULL);//0.5 é o som e 3.0 é a velocidade
                 AtirarTiros(tiro, nave, NUM_TIRO, disparo);
                 break;
             }
@@ -344,17 +370,26 @@ int main() {
             if (naveColidida) {
                 telagameOver = true;
                 InicializaMonstro(monstro, NUM_MONSTROS);
-                al_stop_samples(); // Para qualquer mÃºsica ou som em andamento
+                al_stop_samples(); // Para qualquer música ou som em andamento
                 al_play_sample(sample_5, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_ONCE, NULL); // Toca o som de Game Over
             }
 
             al_clear_to_color(al_map_rgb(255, 255, 255));
             al_draw_bitmap(bg, 0, 0, 0);
             if (pontuacao != NULL) {
-                al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, "PontuaÃ§Ã£o: %d", *pontuacao);
-            }            
+                al_draw_textf(font, al_map_rgb(255, 255, 255), 5, 5, 0, " SCORE: %d", *pontuacao);
+            }
 
             DesenhaMonstros(monstro, NUM_MONSTROS, inimigo, pontuacao);
+
+            // HISCORES
+            /*
+            
+            hiscore =
+                atualizaHiscores(&hiscore, pontuacao, nome,
+                    testaHiscore(pontuacao, hiscore));
+            gravaHiscores(&hiscore);
+            */
 
             // DESENHA A NAVE
             if (nave.ativo) {
@@ -365,7 +400,8 @@ int main() {
         }
     }
 
-    // Encerra o jogo, libera a memÃ³ria
+    // Encerra o jogo, libera a memória
+    free(hiscore);
     al_destroy_bitmap(bg);
     al_destroy_bitmap(sprite);
     al_destroy_bitmap(disparo);
@@ -379,13 +415,13 @@ int main() {
 }
 
 void InicializaNave(Nave* nave) {
-        nave->x = 0;
-        nave->y = 600;
-        nave->borda_x = 50;
-        nave->borda_y = 50;
-        nave->vida = 3;
-        nave->velocidade = 10; 
-        nave->ativo = true;
+    nave->x = 0;
+    nave->y = 600;
+    nave->borda_x = 50;
+    nave->borda_y = 50;
+    nave->vida = 3;
+    nave->velocidade = 10;
+    nave->ativo = true;
 }
 
 void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho_monstro, int* pontuacao) {
@@ -412,17 +448,14 @@ int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontua
                 (monstro[i].x + monstro[i].borda_x) > (nave->x - nave->borda_x) &&
                 (monstro[i].y - monstro[i].borda_y) < (nave->y + nave->borda_y) &&
                 (monstro[i].y + monstro[i].borda_y) > (nave->y - nave->borda_y)) {
-                printf("Colidiu! %d %d %d %d", nave->x, nave->y, monstro[i].x, monstro[i].y);
+                //printf("Colidiu! %d %d %d %d", nave->x, nave->y, monstro[i].x, monstro[i].y);
                 monstro[i].ativo = false;
-                
+
                 nave->vida--;
-                if (nave-> vida == 0) {
+                if (nave->vida == 0) {
                     nave->ativo = false;
                     return 1;
-                        // envia flag para o main, para abrir a tela de HiScores
-                 
-                        // envia flag para o main, para abrir a tela de Game Over
-                    
+                   
                 }
             }
         }
@@ -431,7 +464,7 @@ int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontua
 }
 
 
-void telaInicial(bool verificador, ALLEGRO_BITMAP * bgMenu) {
+void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu) {
     al_clear_to_color(al_map_rgb(0, 0, 0));
     al_draw_bitmap(bgMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
     al_flip_display();
