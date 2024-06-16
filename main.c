@@ -217,7 +217,7 @@ int main() {
 
 
     //INICIA A MUSICA DO MENU
-   // al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
+    al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, &sample_id_4);
 
     // inicializaHiScores();
 
@@ -232,7 +232,7 @@ int main() {
             else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
                 if (event.keyboard.keycode == ALLEGRO_KEY_ENTER) {
                     telainicial = false;
-                  //  al_stop_sample(sample_4);
+                    al_stop_sample(&sample_id_4);
                     al_play_sample(sample, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, NULL);
                 }
                 if (event.keyboard.keycode == ALLEGRO_KEY_S) {
