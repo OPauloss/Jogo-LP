@@ -173,9 +173,16 @@ int main() {
 
     ALLEGRO_BITMAP* scoreMenu = al_load_bitmap("./Score.png");
     if (!scoreMenu) {
-        fprintf(stderr, "Falha ao carregar o background do Socre.\n");
+        fprintf(stderr, "Falha ao carregar o background do Score.\n");
         return -1;
     }
+
+    ALLEGRO_BITMAP* vida = al_load_bitmap("./vida.png");
+    if (!scoreMenu) {
+        fprintf(stderr, "Falha ao carregar o bitmap da vida.\n");
+        return -1;
+    }
+
     // DEFINIÇÕES DE SAMPLE
     ALLEGRO_SAMPLE* sample = al_load_sample("./background.wav"); //SOM BACKGROUND                               =============SAMPLES ADICIONADOS===============
     ALLEGRO_SAMPLE* sample_2 = al_load_sample("./disparo-sound.wav"); // SOM DISPARO
@@ -366,7 +373,7 @@ int main() {
             LiberaMonstros(monstro, NUM_MONSTROS, inimigo);
             AtualizaMonstros(monstro, NUM_MONSTROS);
             BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS, pontuacao);
-            int naveColidida = NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao); ///////////////////////////////////////////////////////////////////////
+            int naveColidida = NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao); 
             if (naveColidida) {
                 telagameOver = true;
                 InicializaMonstro(monstro, NUM_MONSTROS);
@@ -394,7 +401,13 @@ int main() {
             // DESENHA A NAVE
             if (nave.ativo) {
                 al_draw_rotated_bitmap(sprite, 10, 10, nave.x, nave.y, ALLEGRO_PI / 2, 0);
-            }
+                if (nave.ativo) {
+
+                    for (i = 0; i < nave.vida; i++) {
+                        al_draw_bitmap(vida, 250+40*i, 5, 200, 50);
+                    }                   
+                }           
+             }
             DesenhaTiros(tiro, NUM_TIRO, disparo);
             al_flip_display();
         }
@@ -434,7 +447,7 @@ void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho
                     tiros[i].y + 20 >(monstro[j].y) && monstro[j].ativo) {
                     tiros[i].ativo = false;
                     monstro[j].ativo = false;
-                    *pontuacao += monstro[i].pontuacao;
+                    *pontuacao += monstro[i].pontuacao * monstro[i].velocidade/10;
                 }
             }
         }
