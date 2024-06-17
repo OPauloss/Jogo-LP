@@ -18,12 +18,10 @@ void LiberaMonstros(Monstro monstro[], int tamanho , ALLEGRO_BITMAP* inimigo) {
                 monstro[i].borda_x = 50;
                 monstro[i].borda_y = 50;
                 monstro[i].ativo = true;
-                if (monstro[i].velocidade < 75) {
+                if (monstro[i].velocidade < 60) {
                     monstro[i].velocidade *= (1.3);
                 } else
-                    monstro[i].velocidade = 75;           
-
-                
+                    monstro[i].velocidade = 60;         
             }
         }
     }
@@ -44,19 +42,4 @@ void DesenhaMonstros(Monstro monstro[], int tamanho, ALLEGRO_BITMAP* inimigo, in
             al_draw_bitmap(inimigo, monstro[i].x, monstro[i].y, 20);
         }
     }
-}
-
-void inicializaMegaAsteroide(Monstro* monstro, int tamanho) {
-    /*
-    for (int i = 0; i < tamanho; i++) {
-        monstro[i].velocidade = 5;
-        monstro[i].ativo = false;
-        monstro[i].borda_x = 50;
-        monstro[i].borda_y = 50;
-        monstro[i].pontuacao = 100;
-    }
-    
-    */   
-
-
 }

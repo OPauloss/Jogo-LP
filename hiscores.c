@@ -1,13 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include "objetos.h"
+//#include "objetos.h"
 
-// PC4r no main
+// Pôr no main
 #define MAXHISCORE 999999
 #define NUM_HISCORES 10
 
-// PC4r em objetos.h
 typedef struct HiScore
 {
 	long int pontuacao[NUM_HISCORES + 1];
@@ -47,7 +46,7 @@ atualizaHiscores(HiScore** hiscore, long int* pontuacao, char* nome,
 
 	// Inclui o novo hiscore
 	hiscore_local->pontuacao[posicao] = *pontuacao;
-	strcpy((char*)hiscore_local->nome[posicao], (char*)nome);
+	strcpy((char*) hiscore_local->nome[posicao], (char*)nome);
 
 	return hiscore_local;
 }
@@ -61,7 +60,7 @@ armazenaHiscores(FILE* arquivo, HiScore** hiscore)
 	for (i = 0; i < NUM_HISCORES; i++)
 	{
 		fscanf(arquivo, "%d %s %ld\n", &hiscore_local->posicao[i],
-			hiscore_local->nome[i], &hiscore_local->pontuacao[i]);
+			(char*) hiscore_local->nome[i], &hiscore_local->pontuacao[i]);
 		//printf ("%d %s %ld\n", hiscore_local->posicao[i],
 		  //	  hiscore_local->nome[i], hiscore_local->pontuacao[i]);
 	}
@@ -76,11 +75,11 @@ gravaHiscores(HiScore** hiscore)
 	int i;
 	HiScore* hiscore_local = *hiscore;
 
-	arquivo_hiscores = fopen("hiscores_atuais.txt", "w");
+	arquivo_hiscores = fopen_s(&arquivo_hiscores, "hiscores_atuais.txt", "w");
 	for (i = 0; i < NUM_HISCORES; i++)
 	{
 		fprintf(arquivo_hiscores, "%d %s %ld\n", i,
-			hiscore_local->nome[i], hiscore_local->pontuacao[i]);
+			(char*) hiscore_local->nome[i], hiscore_local->pontuacao[i]);
 	}
 	fclose(arquivo_hiscores);
 }
@@ -91,10 +90,7 @@ char * exibeHiscores(HiScore* hiscore)
 
 	for (i = 0; i < NUM_HISCORES; i++)
 	{
-	//	printf("%d %s %ld\n", hiscore->posicao[i], hiscore->nome[i], hiscore->pontuacao[i]);
-
-	}
-
-	
+	printf("%d %s %ld\n", hiscore->posicao[i], (char*) hiscore->nome[i], hiscore->pontuacao[i]);
+	}	
 }
 

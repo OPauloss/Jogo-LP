@@ -1,3 +1,5 @@
+#define NUM_HISCORES 10
+
 typedef struct Nave{
     int x;
     int y;
@@ -31,7 +33,7 @@ typedef struct Tiro{
 
 typedef struct HiScore
 {
-    long int pontuacao[10];
-    int posicao[10];
-    char* nome[10][3];
+    long int pontuacao[NUM_HISCORES + 1];
+    int posicao[NUM_HISCORES + 1];
+    char* nome[NUM_HISCORES + 1][3];
 } HiScore;

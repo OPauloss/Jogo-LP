@@ -11,7 +11,6 @@
 #include "monstro.h"
 #include "disparo_nave.c"
 #include "disparo_nave.h"
-//#include "hiscore.c"
 #include "hiscores.h"
 
 
@@ -22,13 +21,7 @@
 #define FPS 60
 #define MAXHISCORE 999999
 #define NUM_HISCORES 10
-
-// INICIALIZACAO
-// HiScore * hiscore = (HiScore*) malloc (sizeof(HiScore * NUM_HISCORES));
-// FILE * hiscores_arquivo;
-// hiscores_arquivo = fopen("hiscores_iniciais.txt", "r");
-// hiscore = (HiScore*) armazenaHiscores(hiscores_arquivo);
-
+#define MAX_VIDA 3
 
 // PROTÓTIPOS
 void InicializaNave(Nave* nave);
@@ -42,7 +35,7 @@ int main() {
     Monstro monstro[NUM_MONSTROS];
     Tiro tiro[NUM_TIRO];
     int i;
-    char* buffer = (char*)malloc(sizeof(char) * 30);
+   // char* buffer = (char*)malloc(sizeof(char) * 30);
 
     FILE* arquivo_inicial;
 
@@ -50,11 +43,12 @@ int main() {
     if (arquivo_inicial == NULL)
     {
         ferror;
-        printf("Erro");
+        printf("Erro ao abrir o arquivo de Hiscores iniciais");
     }
 
     HiScore* hiscore = (HiScore*)malloc(sizeof(HiScore) * NUM_HISCORES + 1);
     hiscore = armazenaHiscores(arquivo_inicial, &hiscore);
+    //exibeHiscores(hiscore);
 
    // printf("%c%c%c", (char*) hiscore->nome[5][0], (char*) hiscore->nome[5][1], (char*) hiscore->nome[5][2]);
 
@@ -208,25 +202,18 @@ int main() {
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_start_timer(timer);
 
-
-
     bool key_up = false;
     bool key_down = false;
     bool key_left = false;
     bool key_right = false;
-
 
     bool telainicial = true;
     bool running = true;
     bool telaScore = false;
     bool telagameOver = false;
 
-
-
     //INICIA A MUSICA DO MENU
     al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, &sample_id_4);
-
-    // inicializaHiScores();
 
     while (running) {
         ALLEGRO_EVENT event;
@@ -258,8 +245,8 @@ int main() {
             al_draw_bitmap(scoreMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
 
             for (i = 0; i < NUM_HISCORES; i++) {
-                printf("%d %ld %s\n", i+1, hiscore->pontuacao[i], (char*) hiscore->nome[i]);
-                al_draw_textf(font, al_map_rgb(255, 255, 254), largura / 3 + 90, 250 +40*i, 0, "%d %ld %s", (int)i + 1,
+               // printf("%d %ld %s\n", i+1, hiscore->pontuacao[i], (char*) hiscore->nome[i]);
+                al_draw_textf(font, al_map_rgb(255, 180, 254), largura / 3 + 90, 250 +40*i, 0, "%d %ld %s", (int)i + 1,
                     (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
             }            
 
@@ -392,9 +379,7 @@ int main() {
             // HISCORES
             /*
             
-            hiscore =
-                atualizaHiscores(&hiscore, pontuacao, nome,
-                    testaHiscore(pontuacao, hiscore));
+            hiscore = atualizaHiscores(&hiscore, pontuacao, nome, testaHiscore(pontuacao, hiscore));
             gravaHiscores(&hiscore);
             */
 
@@ -402,7 +387,6 @@ int main() {
             if (nave.ativo) {
                 al_draw_rotated_bitmap(sprite, 10, 10, nave.x, nave.y, ALLEGRO_PI / 2, 0);
                 if (nave.ativo) {
-
                     for (i = 0; i < nave.vida; i++) {
                         al_draw_bitmap(vida, 250+40*i, 5, 200, 50);
                     }                   
@@ -432,7 +416,7 @@ void InicializaNave(Nave* nave) {
     nave->y = 600;
     nave->borda_x = 50;
     nave->borda_y = 50;
-    nave->vida = 3;
+    nave->vida = MAX_VIDA;
     nave->velocidade = 10;
     nave->ativo = true;
 }
