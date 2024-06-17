@@ -259,9 +259,9 @@ int main() {
             al_draw_bitmap(scoreMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
 
             for (i = 0; i < NUM_HISCORES; i++) {
-                al_draw_textf(font_arcade, al_map_rgb(30, 30, 30), largura / 3 + 90, 260 + 40 * i, 0,
+                al_draw_textf(font_arcade, al_map_rgb(30, 30, 30), largura / 3 + 60, 260 + 40 * i, 0,
                     "%d %ld %s", (int)i + 1, (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
-                al_draw_textf(font_arcade, al_map_rgb(255, 180, 254), largura / 3 + 88, 258 +40*i, 0,
+                al_draw_textf(font_arcade, al_map_rgb(255, 180, 254), largura / 3 + 58, 258 +40*i, 0,
                     "%d %ld %s", (int)i + 1, (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
                 
             }            
