@@ -36,18 +36,21 @@ atualizaHiscores(HiScore** hiscore, long int* pontuacao, char* nome,
 {
 	int i;
 	HiScore* hiscore_local = *hiscore;
+	//printf("%s", (char*) hiscore_local->nome[9]);
 	
 	for (i = NUM_HISCORES; i >= posicao; i--)
 	{
-		hiscore_local->pontuacao[i + 1] = hiscore_local->pontuacao[i];
-		strcpy((char*)hiscore_local->nome[i + 1], (char*)hiscore_local->nome[i]);
-		//	 strcpy (char2, char1);
+		(long int) hiscore_local->pontuacao[i ] = (long int) hiscore_local->pontuacao[i-1];
+		strcpy((char*)hiscore_local->nome[i ], (char*)hiscore_local->nome[i-1]);
+		
 	}
 
 	// Inclui o novo hiscore
-	hiscore_local->pontuacao[posicao] = *pontuacao;
-	strcpy((char*) hiscore_local->nome[posicao], (char*)nome);
-
+	if (posicao < NUM_HISCORES) {
+		hiscore_local->pontuacao[posicao] = *pontuacao;
+		strcpy((char*)hiscore_local->nome[posicao], (char*)nome);
+	}
+	
 	return hiscore_local;
 }
 
@@ -75,7 +78,7 @@ gravaHiscores(HiScore** hiscore)
 	int i;
 	HiScore* hiscore_local = *hiscore;
 
-	arquivo_hiscores = fopen_s(&arquivo_hiscores, "hiscores_atuais.txt", "w");
+	arquivo_hiscores = fopen("hiscores_atuais.txt", "w");
 	for (i = 0; i < NUM_HISCORES; i++)
 	{
 		fprintf(arquivo_hiscores, "%d %s %ld\n", i,

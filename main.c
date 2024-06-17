@@ -38,6 +38,7 @@ int main() {
    // char* buffer = (char*)malloc(sizeof(char) * 30);
 
     FILE* arquivo_inicial;
+    FILE* arquivo_hiscores_atualizados;
 
     arquivo_inicial = fopen("hiscore_inicial.txt", "r");
     if (arquivo_inicial == NULL)
@@ -46,12 +47,20 @@ int main() {
         printf("Erro ao abrir o arquivo de Hiscores iniciais");
     }
 
+    arquivo_hiscores_atualizados = fopen("hiscores_atuais.txt", "r");
+    if (arquivo_hiscores_atualizados == NULL)
+    {
+        ferror;
+        printf("Arquivo de Hiscores atuais não encontrado.");
+    }
+    else arquivo_inicial = arquivo_hiscores_atualizados;
+
+
     HiScore* hiscore = (HiScore*)malloc(sizeof(HiScore) * NUM_HISCORES + 1);
     hiscore = armazenaHiscores(arquivo_inicial, &hiscore);
-    //exibeHiscores(hiscore);
-
-   // printf("%c%c%c", (char*) hiscore->nome[5][0], (char*) hiscore->nome[5][1], (char*) hiscore->nome[5][2]);
-
+    char* player_hiscore = "HAI";
+    fclose(arquivo_hiscores_atualizados);
+ 
     int* pontuacao = (int*)malloc(sizeof(int));
     if (pontuacao != NULL) {
         *pontuacao = 0;
@@ -234,8 +243,7 @@ int main() {
                     telaScore = true;
                 }
             }
-            // telainicial = true;
-            telaInicial(telainicial, bgMenu);
+           telaInicial(telainicial, bgMenu);
         }
         else if (telaScore) { // ACRESCENTANDO TELA DE SCORE
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -245,7 +253,6 @@ int main() {
             al_draw_bitmap(scoreMenu, (1280 - largura) / 2, (720 - altura) / 2, 0);
 
             for (i = 0; i < NUM_HISCORES; i++) {
-               // printf("%d %ld %s\n", i+1, hiscore->pontuacao[i], (char*) hiscore->nome[i]);
                 al_draw_textf(font, al_map_rgb(255, 180, 254), largura / 3 + 90, 250 +40*i, 0, "%d %ld %s", (int)i + 1,
                     (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
             }            
@@ -264,9 +271,19 @@ int main() {
                 running = false;
             }
 
+          
+
             al_clear_to_color(al_map_rgb(0, 0, 0));
             al_draw_bitmap(bgGameOver, (1280 - largura) / 2, (720 - altura) / 2, 0);
             al_flip_display();
+            
+           // printf("%d %ld\n", testaHiscore(pontuacao, hiscore) , *pontuacao);
+            
+            
+            if (testaHiscore(pontuacao, hiscore) != -1) {
+                hiscore = atualizaHiscores(&hiscore, pontuacao, player_hiscore, testaHiscore(pontuacao, hiscore));
+                gravaHiscores(&hiscore);
+            }     
 
 
             if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {          ///////////////GAME OVER FUNCIONAL
