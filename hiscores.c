@@ -38,7 +38,8 @@ atualizaHiscores(HiScore** hiscore, long int* pontuacao, char* nome,
 	HiScore* hiscore_local = *hiscore;
 	//printf("%s", (char*) hiscore_local->nome[9]);
 	
-	for (i = NUM_HISCORES; i >= posicao; i--)
+	// Tem um bugzinho aqui
+	for (i = NUM_HISCORES; i > posicao; i--)
 	{
 		(long int) hiscore_local->pontuacao[i ] = (long int) hiscore_local->pontuacao[i-1];
 		strcpy((char*)hiscore_local->nome[i ], (char*)hiscore_local->nome[i-1]);

@@ -9,6 +9,9 @@ typedef struct Nave{
     int pontos;
     int vida;
     bool ativo;
+    float raio;
+    int centro_x;
+    int centro_y;
 }Nave;
 
 
@@ -19,7 +22,10 @@ typedef struct Monstro{
     int borda_x;
     int borda_y;
     int pontuacao;
-    float rotacao;
+   // float rotacao;
+    float raio;
+    int centro_x;
+    int centro_y;
     bool ativo;
 }Monstro;
 

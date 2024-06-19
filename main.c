@@ -12,6 +12,7 @@
 #include "disparo_nave.c"
 #include "disparo_nave.h"
 #include "hiscores.h"
+#include <math.h>
 
 
 #define NUM_TIRO 20
@@ -29,28 +30,28 @@ void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu);
 void telaGameOver(bool verificador, ALLEGRO_BITMAP* bgGameOver);
 //int testaHighScore(long int *pontuacao);
 
-int main() {
+int main(int argc, char * argv[]) {
     // VARIÁVEIS DO JOGO
     Nave nave;
     Monstro monstro[NUM_MONSTROS];
     Tiro tiro[NUM_TIRO];
     int i;
-   // char* buffer = (char*)malloc(sizeof(char) * 30);
+    char* criatura = "./mon1.png";
+    char* meteoro = "./mon.png";
+    char* sprite_inimigo = meteoro;
 
     FILE* arquivo_inicial;
     FILE* arquivo_hiscores_atualizados;
 
     arquivo_inicial = fopen("hiscore_inicial.txt", "r");
-    if (arquivo_inicial == NULL)
+    if (ferror(arquivo_inicial))
     {
-        ferror;
         printf("Erro ao abrir o arquivo de Hiscores iniciais");
     }
 
     arquivo_hiscores_atualizados = fopen("hiscores_atuais.txt", "r");
-    if (arquivo_hiscores_atualizados == NULL)
+    if (ferror(arquivo_hiscores_atualizados))
     {
-        ferror;
         printf("Arquivo de Hiscores atuais não encontrado.");
     }
     else arquivo_inicial = arquivo_hiscores_atualizados;
@@ -150,11 +151,20 @@ int main() {
         return -1;
     }
 
-    ALLEGRO_BITMAP* inimigo = al_load_bitmap("./mon.png");
-    if (!inimigo) {
-        fprintf(stderr, "Falha ao carregar o sprite do inimigo.\n");
-        return -1;
+    
+    if (argv[1] != NULL && strcmp("monstro", argv[1])) {
+        sprite_inimigo = criatura;
     }
+    else {
+        sprite_inimigo = meteoro;
+    } 
+
+     ALLEGRO_BITMAP* inimigo = al_load_bitmap(sprite_inimigo);
+     if (!inimigo) {
+         fprintf(stderr, "Falha ao carregar o sprite do inimigo.\n");
+          return -1;
+        }  
+
 
     ALLEGRO_BITMAP* disparo = al_load_bitmap("./disparo.png");
     if (!disparo) {
@@ -198,6 +208,9 @@ int main() {
     ALLEGRO_SAMPLE* sample_3 = al_load_sample("./colisao.wav"); // SOM COLISAO
     ALLEGRO_SAMPLE* sample_4 = al_load_sample("./menusound.wav");  // SOM MENU
     ALLEGRO_SAMPLE* sample_5 = al_load_sample("./gameOver.wav");    // SOM GAME OVER
+    ALLEGRO_SAMPLE* sample_6 = al_load_sample("./211634__qubodup__damage.flac"); // SOM DANO
+    /*    Damage http ://www.freesound.org/people/qubodup/sounds/211634 by Iwan ‘qubodup’ Gabovitch
+    http://freesound.org/people/qubodup under CC-BY 3.0 License http://creativecommons.org/licenses/by/3.0/legalcode */
     ALLEGRO_SAMPLE_ID sample_id_4;
 
     if (!sample) {
@@ -305,7 +318,6 @@ int main() {
 
                 *pontuacao = 0;
 
-               // printf(" pontuacao = %d", *pontuacao);
                 InicializaNave(&nave);                     //por que tem que ser ponto ao inves de ->?
 
                 telaInicial(telaInicial, bgMenu);
@@ -367,18 +379,22 @@ int main() {
         else if (event.type == ALLEGRO_EVENT_TIMER) {
             if (key_up) {
                 nave.y -= nave.velocidade;
+                nave.centro_y -= nave.velocidade;
                 if (nave.y < 0) nave.y = 0;
             }
             if (key_down) {
                 nave.y += nave.velocidade;
+                nave.centro_y += nave.velocidade;
                 if (nave.y > altura - al_get_bitmap_height(sprite)) nave.y = altura - al_get_bitmap_height(sprite);
             }
             if (key_left) {
                 nave.x -= nave.velocidade;
+                nave.centro_x -= nave.velocidade;
                 if (nave.x < 0) nave.x = 0;
             }
             if (key_right) {
                 nave.x += nave.velocidade;
+                nave.centro_y += nave.velocidade;
                 if (nave.x > largura - al_get_bitmap_width(sprite)) nave.x = largura - al_get_bitmap_width(sprite);
             }
 
@@ -387,7 +403,10 @@ int main() {
             AtualizaMonstros(monstro, NUM_MONSTROS);
             BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS, pontuacao);
             int naveColidida = NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao); 
-            if (naveColidida) {
+            if (naveColidida == 2) {
+                al_play_sample(sample_6, 0.6, 0.0, 2.5, ALLEGRO_PLAYMODE_ONCE, NULL);//0.5 é o som e 3.0 é a velocidade
+            }
+            else if (naveColidida) {
                 telagameOver = true;
                 InicializaMonstro(monstro, NUM_MONSTROS);
                 al_stop_samples(); // Para qualquer música ou som em andamento
@@ -438,10 +457,12 @@ int main() {
 }
 
 void InicializaNave(Nave* nave) {
-    nave->x = 0;
-    nave->y = 600;
+    nave->x = 100;
+    nave->y = 500;
     nave->borda_x = 50;
     nave->borda_y = 50;
+    nave->centro_x = 50 / 2;
+    nave->centro_y = 50 / 2;
     nave->vida = MAX_VIDA;
     nave->velocidade = 10;
     nave->ativo = true;
@@ -467,25 +488,28 @@ void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho
 int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontuacao) {///////////////////////////////////////
     for (int i = 0; i < tamanho_monstro; i++) {
         if (monstro[i].ativo) {
+            
             if ((monstro[i].x - monstro[i].borda_x + 100) < (nave->x + nave->borda_x) &&
                 (monstro[i].x + monstro[i].borda_x) > (nave->x - nave->borda_x) &&
                 (monstro[i].y - monstro[i].borda_y) < (nave->y + nave->borda_y) &&
                 (monstro[i].y + monstro[i].borda_y) > (nave->y - nave->borda_y)) {
                 //printf("Colidiu! %d %d %d %d", nave->x, nave->y, monstro[i].x, monstro[i].y);
+                
+            //if (sqrt(pow(monstro[i].centro_x - nave->centro_x, 2) + pow(monstro[i].centro_y - nave->centro_y, 2)) < 50) {
+
                 monstro[i].ativo = false;
 
                 nave->vida--;
                 if (nave->vida == 0) {
                     nave->ativo = false;
                     return 1;
-                   
                 }
-            }
+                else return 2; // Pra indicar que a dano sofreu dano
+             }
         }
     }
     return 0;
 }
-
 
 void telaInicial(bool verificador, ALLEGRO_BITMAP* bgMenu) {
     al_clear_to_color(al_map_rgb(0, 0, 0));

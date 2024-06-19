@@ -7,6 +7,8 @@ void InicializaMonstro(Monstro* monstro, int tamanho) {
         monstro[i].borda_x = 50;
         monstro[i].borda_y = 50;
         monstro[i].pontuacao = 100;
+        monstro[i].centro_x = 0;
+        monstro[i].centro_y = 0;
     }
 }
 void LiberaMonstros(Monstro monstro[], int tamanho , ALLEGRO_BITMAP* inimigo) {
@@ -17,6 +19,8 @@ void LiberaMonstros(Monstro monstro[], int tamanho , ALLEGRO_BITMAP* inimigo) {
                 monstro[i].y = rand() % (altura);
                 monstro[i].borda_x = 50;
                 monstro[i].borda_y = 50;
+                monstro[i].centro_x = monstro[i].x + 50/2;
+                monstro[i].centro_y = monstro[i].x + 50 / 2;
                 monstro[i].ativo = true;
                 if (monstro[i].velocidade < 60) {
                     monstro[i].velocidade *= (1.3);
@@ -30,6 +34,7 @@ void AtualizaMonstros(Monstro monstro[], int tamanho) {
     for (int i = 0; i < tamanho; i++) {
         if (monstro[i].ativo) {
             monstro[i].x -= monstro[i].velocidade;
+            monstro[i].centro_x -= monstro[i].velocidade;
             if (monstro[i].x < 0) {
                 monstro[i].ativo = false;
             }
