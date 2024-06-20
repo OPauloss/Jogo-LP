@@ -240,14 +240,14 @@ int main(int argc, char * argv[]) {
     bool telaScore = false;
     bool telagameOver = false;
 
-    //INICIA A MUSICA DO MENU
+    // INICIA A MUSICA DO MENU
     al_play_sample(sample_4, 1.0, 0.0, 1.0, ALLEGRO_PLAYMODE_LOOP, &sample_id_4);
 
     while (running) {
         ALLEGRO_EVENT event;
         al_wait_for_event(event_queue, &event);
 
-        if (telainicial) {          //ACRESCENTADO COMO TELA INICIAL
+        if (telainicial) {          // COMO TELA INICIAL
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
             }
@@ -264,7 +264,7 @@ int main(int argc, char * argv[]) {
             }
            telaInicial(telainicial, bgMenu);
         }
-        else if (telaScore) { // ACRESCENTANDO TELA DE SCORE
+        else if (telaScore) { //  TELA DE SCORE
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
             }
@@ -273,9 +273,9 @@ int main(int argc, char * argv[]) {
 
             for (i = 0; i < NUM_HISCORES; i++) {
                 al_draw_textf(font_arcade, al_map_rgb(30, 30, 30), largura / 3 + 60, 260 + 40 * i, 0,
-                    "%d %ld %s", (int)i + 1, (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
+                    "%d %ld %s", (int)i + 1, (long int) hiscore->pontuacao[i], (char*) hiscore->nome[i]);
                 al_draw_textf(font_arcade, al_map_rgb(255, 180, 254), largura / 3 + 58, 258 +40*i, 0,
-                    "%d %ld %s", (int)i + 1, (long int)hiscore->pontuacao[i], (char*)hiscore->nome[i]);
+                    "%d %ld %s", (int)i + 1, (long int) hiscore->pontuacao[i], (char*) hiscore->nome[i]);
                 
             }            
 
@@ -288,7 +288,7 @@ int main(int argc, char * argv[]) {
             }
 
         }
-        else if (telagameOver) { // ACRESCENTANDO TELA DE GAME OVER
+        else if (telagameOver) { // TELA DE GAME OVER
             if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
                 running = false;
             }
@@ -308,7 +308,7 @@ int main(int argc, char * argv[]) {
             }     
 
 
-            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {          ///////////////GAME OVER FUNCIONAL
+            if (event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE) {       
                 telagameOver = false;
                 telainicial = true;
                 key_up = false;
@@ -318,7 +318,7 @@ int main(int argc, char * argv[]) {
 
                 *pontuacao = 0;
 
-                InicializaNave(&nave);                     //por que tem que ser ponto ao inves de ->?
+                InicializaNave(&nave);                     
 
                 telaInicial(telaInicial, bgMenu);
             }
@@ -404,7 +404,7 @@ int main(int argc, char * argv[]) {
             BalaColidida(tiro, NUM_TIRO, monstro, NUM_MONSTROS, pontuacao);
             int naveColidida = NaveColidida(monstro, NUM_MONSTROS, &nave, pontuacao); 
             if (naveColidida == 2) {
-                al_play_sample(sample_6, 0.6, 0.0, 2.5, ALLEGRO_PLAYMODE_ONCE, NULL);//0.5 é o som e 3.0 é a velocidade
+                al_play_sample(sample_6, 0.6, 0.0, 2.5, ALLEGRO_PLAYMODE_ONCE, NULL); //0.5 é o som e 3.0 é a velocidade
             }
             else if (naveColidida) {
                 telagameOver = true;
@@ -420,13 +420,6 @@ int main(int argc, char * argv[]) {
             }
 
             DesenhaMonstros(monstro, NUM_MONSTROS, inimigo, pontuacao);
-
-            // HISCORES
-            /*
-            
-            hiscore = atualizaHiscores(&hiscore, pontuacao, nome, testaHiscore(pontuacao, hiscore));
-            gravaHiscores(&hiscore);
-            */
 
             // DESENHA A NAVE
             if (nave.ativo) {
@@ -485,7 +478,7 @@ void BalaColidida(Tiro tiros[], int tamanho_tiro, Monstro monstro[], int tamanho
     }
 }
 
-int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontuacao) {///////////////////////////////////////
+int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontuacao) { 
     for (int i = 0; i < tamanho_monstro; i++) {
         if (monstro[i].ativo) {
             
@@ -495,6 +488,7 @@ int NaveColidida(Monstro monstro[], int tamanho_monstro, Nave* nave, int* pontua
                 (monstro[i].y + monstro[i].borda_y) > (nave->y - nave->borda_y)) {
                 //printf("Colidiu! %d %d %d %d", nave->x, nave->y, monstro[i].x, monstro[i].y);
                 
+            // Colisão por disância euclidiana
             //if (sqrt(pow(monstro[i].centro_x - nave->centro_x, 2) + pow(monstro[i].centro_y - nave->centro_y, 2)) < 50) {
 
                 monstro[i].ativo = false;

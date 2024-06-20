@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "objetos.h"
 
-// Pôr no main
 #define MAXHISCORE 999999
 #define NUM_HISCORES 10
 
@@ -36,14 +34,12 @@ atualizaHiscores(HiScore** hiscore, long int* pontuacao, char* nome,
 {
 	int i;
 	HiScore* hiscore_local = *hiscore;
-	//printf("%s", (char*) hiscore_local->nome[9]);
-	
-	// Tem um bugzinho aqui
-	for (i = NUM_HISCORES; i > posicao; i--)
+
+	// Tinha um bugzinho aqui
+	for (i = NUM_HISCORES-1; i >= posicao; i--)
 	{
-		(long int) hiscore_local->pontuacao[i ] = (long int) hiscore_local->pontuacao[i-1];
-		strcpy((char*)hiscore_local->nome[i ], (char*)hiscore_local->nome[i-1]);
-		
+		(long int) hiscore_local->pontuacao[i+1] = (long int) hiscore_local->pontuacao[i];
+		strcpy((char*) hiscore_local->nome[i+1], (char*) hiscore_local->nome[i]);
 	}
 
 	// Inclui o novo hiscore
@@ -65,8 +61,6 @@ armazenaHiscores(FILE* arquivo, HiScore** hiscore)
 	{
 		fscanf(arquivo, "%d %s %ld\n", &hiscore_local->posicao[i],
 			(char*) hiscore_local->nome[i], &hiscore_local->pontuacao[i]);
-		//printf ("%d %s %ld\n", hiscore_local->posicao[i],
-		  //	  hiscore_local->nome[i], hiscore_local->pontuacao[i]);
 	}
 	return hiscore_local;
 }
